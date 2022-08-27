@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<style>
+			*
+			{
+				margin: 0;
+				padding: 0;
+			}
+			
+			.box
+			{
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				min-height: 100vh;
+				background-color: #222;
+			}
+			.on /* 或写作.box.on */
+			{
+				background-image: radial-gradient(#555,#111);
+			}
+			
+			.bulb
+			{
+				width: 120px;
+				height: 120px;
+				border-radius: 60px;
+				background-color: #444;
+				position: relative;
+			}
+			.bulb::before
+			{
+				content: "";
+				display: block;
+				width: 50px;
+				height: inherit;
+				background-color: #444;
+				position: absolute;
+				left: calc(50% - 25px);
+				top: -60%;
+				box-sizing: border-box;
+				border-top: 40px solid black;
+			}
+			.on .bulb::before
+			{
+				background-color: #fff;
+			}
+			.on .bulb::after
+			{
+				content: "";
+				display: block;
+				width: 200px;
+				height: 200px;
+				background-color: white;
+				border-radius: 100px;
+				position: absolute;
+				left: -40px;
+				top: -30px;
+				filter: blur(40px);
+			}
+			.on .bulb
+			{
+				background-color: white;
+			}
+			
+			.left
+			{
+				width: 60px;
+				height: 60px;
+				/* background-color: white; */
+				border-bottom-right-radius: 60px;
+				position: absolute;
+				left: -25px;
+				top: -25px;
+				box-shadow: 43px 5px 0 #444;
+			}
+			.on .left
+			{
+				box-shadow: 43px 5px 0 #fff;
+			}
+			.right
+			{
+				width: 60px;
+				height: 60px;
+				/* background-color: white; */
+				border-bottom-left-radius: 60px;
+				position: absolute;
+				right: -25px;
+				top: -25px;
+				box-shadow: -43px 5px 0 #444;
+			}
+			.on .right
+			{
+				box-shadow: -43px 5px 0 #fff;
+			}
+			
+			.wire
+			{
+				width: 4px;
+				height: 35vh;
+				background-color: black;
+				position: absolute;
+				left: calc(50% - 2px);
+				top:0;
+			}
+			
+			.switch
+			{
+				width: 150px;
+				height: 150px;
+				background-color: white;
+				position: absolute;
+				right: 100px;
+				bottom: 100px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				border-style: outset;
+			}
+			.button
+			{
+				width: 110px;
+				height: 110px;
+				background-image: linear-gradient(#777,#fff,#777);
+				border: 2px outset #000;
+				position: relative;
+			}
+			
+			.surface
+			{
+				width: inherit;
+				height: 90%;
+				background-color: white;
+				position: absolute;
+				top: 0;
+			}
+			.surface::before
+			{
+				content: "";
+				display: block;
+				width: 20px;
+				height: 4px;
+				background-color: lightgray;
+				position: absolute;
+				left: calc(50% - 10px);
+				top: 10%;
+			}
+			.on .surface /* 或写作：.box.on .surface */
+			{
+				top: 10%;
+			}
+			.on .surface::before
+			{
+				background-color: springgreen;
+			}
+			
+		</style>
+		
+	</head>
+	<body>
+		<div class="box">
+			<div class="wire"></div>
+			<div class="bulb">
+				<div class="left"></div>
+				<div class="right"></div>
+			</div>
+			<div class="switch">
+				<div class="button">
+					<div class="surface"></div>
+				</div>
+				<audio src="media/switch.mp3" id="sound">
+					当前浏览器不支持audio
+				</audio>
+			</div>
+			
+		</div>
+		
+		
+		<script>
+			let box=document.querySelector(".box");
+			let Switch=document.querySelector(".switch");
+			let sound=document.getElementById("sound");
+			
+			Switch.onclick=function()
+			{
+				box.classList.toggle("on");
+				sound.play();
+			}
+		</script>
+	</body>
+</html>
