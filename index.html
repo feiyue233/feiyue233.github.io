@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>魔方相册</title>
+		<style>
+			*{margin: 0; padding: 0;}
+			
+			#stage
+			{
+				perspective: 1000px;
+			}
+			
+			#cube
+			{
+				width: 300px;
+				height: 300px;
+				margin: 150px auto 0;
+				/* border: 1px solid; */
+				/* background-color: antiquewhite; */
+				transform-style: preserve-3d;
+				/* transform:rotateX(-45deg) rotateY(-45deg); */
+				animation: rotate1 10s linear infinite;
+			}
+			#cube:hover
+			{
+				/* animation: rotate2 10s linear infinite; */
+			}
+			#cube:hover .surface div
+			{
+				/* transform: translateZ(200px); */
+			}
+			
+			.surface
+			{
+				width: 300px;
+				height: 300px;
+				position: absolute;
+				/* opacity: 0.3; */
+				text-align: center;
+				/* font-size: 0; */
+				transform-style: preserve-3d;
+			}
+			
+			.surface div
+			{
+				width:100px;
+				height:100px;
+				background-color:red;
+				border:2px solid white;
+				box-sizing:border-box;
+				/* 方法1 使其自动排列，需设置font-size为0*/
+				/* display: inline-block; */
+				/* 方法2 利用塌陷初始化位置，在js中定位*/
+				position: absolute;
+				background-size: 300px;
+				
+				transition: all 2s ease;
+			}
+			
+			.top
+			{
+				/* background-color: red; */
+				/* 法一 先平移后旋转,尽量保持各坐标系方向相同 */
+				/* transform: translateY(-150px) rotateX(90deg); */
+				/* 法二 先旋转后平移,要求能找到该元素的坐标系 */
+				transform: rotateX(90deg) translateZ(150px);
+				/* 法三 改变transform-origin，改变旋转轴，不用平移 */
+				/* transform-origin: 0% 0%;
+				transform: rotateX(90deg); */
+			}
+			.bottom
+			{
+				/* background-color: yellow; */
+				transform: translateY(150px) rotateX(-90deg);
+			}
+			.left
+			{
+				/* background-color: blue; */
+				transform: translateX(-150px) rotateY(-90deg);
+			}
+			.right
+			{
+				/* background-color: green; */
+				transform: translateX(150px) rotateY(90deg);
+			}
+			.front
+			{
+				/* background-color: orange; */
+				transform:translateZ(150px);
+			}
+			.rear
+			{
+				/* background-color: purple; */
+				transform:translateZ(-150px) rotateY(180deg);
+			}
+			.runRecombine
+			{
+				animation: recombine 6s linear;
+			}
+			
+			/* 定义动画 */
+			@keyframes rotate1
+			{
+				0%
+				{
+					transform: rotateX(0deg) rotateY(0deg);
+				}
+				100%
+				{
+					transform: rotateX(360deg) rotateY(720deg);
+				}
+			}
+			@keyframes rotate2
+			{
+				0%
+				{
+					transform: rotateX(0deg) rotateY(0deg);
+				}
+				100%
+				{
+					transform: rotateX(0deg) rotateY(360deg);
+				}
+			}
+			@keyframes recombine
+			{
+				0%
+				{
+					transform: translateZ(0px) rotate(0deg) scale(1);
+				}
+				30%
+				{
+					transform: translateZ(300px) rotate(720deg) scale(0);
+				}
+				90%
+				{
+					transform: translateZ(300px) rotate(720deg) scale(0);
+				}
+				100%
+				{
+					transform: translateZ(0px) rotate(0deg) scale(1);
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div id="stage">
+			<div id="cube">
+				<div class="surface top"></div>
+				<div class="surface bottom"></div>
+				<div class="surface left"></div>
+				<div class="surface right"></div>
+				<div class="surface front"></div>
+				<div class="surface rear"></div>
+			</div>
+		</div>
+	</body>
+	
+	<script>
+		var surfaces=document.querySelectorAll(".surface");
+		// console.log(surfaces);
+		// 创建文档片段，优化添加
+		var frag=document.createDocumentFragment();
+		// 创建储存图片路径的数组，相比变量拼接此法图片更清晰，对图片命名没有要求，更合理
+		var picSrc=["url(images/a0.jpeg)","url(images/a1.jpeg)","url(images/a2.jpeg)","url(images/a3.jpeg)","url(images/a4.jpeg)","url(images/a5.jpeg)"];
+		
+		for(var i=0;i<surfaces.length;i++) // 第一层循环遍历6个面
+		{
+			for(var row=0;row<3;row++) // 第二层循环遍历行
+			{
+				for(var col=0;col<3;col++) // 第三层循环遍历列
+				{
+					var div=document.createElement("div");
+					// 定位每个div
+					div.style.top=row*100+"px";
+					div.style.left=col*100+"px";
+					//设置每张个div的背景图片的位置，可以看作保持大背景图片不动，
+					// 从左上角开始，逐一移动小盒子到相应位置，移动距离与定位相同。
+					div.style.backgroundImage=picSrc[i];
+					// div.innerHTML="<h1>"+i+"</h1>";
+					div.style.backgroundPositionX=-col*100+"px";
+					div.style.backgroundPositionY=-row*100+"px";
+					
+					// 添加元素到DOM
+					// surfaces[i].appendChild(div);
+					// 此法反复操作DOM，每一次操作都会导致新的layout，可使用文档片段进行添加优化：
+					frag.appendChild(div);
+				}
+			}
+			surfaces[i].appendChild(frag);
+		}
+		
+		// 设置可操作的动画
+		var cube=document.querySelector("#cube");
+		var divs=document.querySelectorAll(".surface div");
+		cube.ondblclick=function()
+		{
+			console.log("test");
+			var j=0;
+			for(var i=0;i<divs.length;i++,j++)
+			{
+				if(j==9) j=0;
+				divs[i].classList.add("runRecombine");	
+				divs[i].style.animationDelay=j*0.4+"s";
+				divs[i].onanimationend=function()
+				{
+					this.classList.remove("runRecombine");
+				}
+			}
+		}
+		
+	</script>
+</html>

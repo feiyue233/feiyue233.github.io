@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<style>
+		*
+		{
+			margin:0;
+			padding:0;
+		}
+		
+		li
+		{
+			list-style-type: none;
+			width: 80px;
+			height: 22px;
+			line-height: 22px;
+			text-align: center;
+			/* border: 1px dashed; */
+			position: absolute;
+			top: calc(50% - 11px);
+			transition: all 1s linear;
+		}
+		
+		#clock
+		{
+			width: 700px;
+			height: 700px;
+			/* border: 1px solid; */
+			position: absolute;
+			top: calc(50% - 350px);
+			left: calc(50% - 350px);
+			transform: scale(0.8);
+			color: white;
+		}
+		body
+		{
+			/* 消除抖动 */
+			overflow: hidden;
+			background-color: black;
+		}
+		
+		.common
+		{
+			width: 100%;
+			height: 100%;
+			position: absolute;
+		}
+		
+		#year li
+		{
+			right: calc(50% - 40px);
+		}
+		#month li
+		{
+			right: calc(50% - 120px);
+			transform-origin: -40px; /* Y不写 默认为50% */
+		}
+		#day li
+		{
+			right: calc(50% - 200px);
+			transform-origin: -120px;
+			transition-delay: 1s;
+		}
+		#hour li
+		{
+			right: calc(50% - 280px);
+			transform-origin: -200px;
+			transition-delay: 2s;
+		}
+		#minute li
+		{
+			right: calc(50% - 360px);
+			transform-origin: -280px;
+			transition-delay: 3s;
+		}
+		#second li
+		{
+			right: calc(50% - 440px);
+			transform-origin: -360px;
+			transition-delay: 4s;
+		}
+		#second
+		{
+			/* transition: 0.15s linear; */
+		}
+		
+		.current
+		{
+			color: red;
+		}
+		.transition
+		{
+			transition: all 1s linear;
+		}
+		
+		#dot
+		{
+			width: 10px;
+			height: 10px;
+			border-radius: 5px;
+			background-color: white;
+			position: absolute;
+			top:calc(50% + 7px);
+			left: calc(50% - 5px);
+			visibility: hidden;
+		}
+		
+		#line
+		{
+			width: 10px;
+			height: 2px;
+			background-color: white;
+			position: absolute;
+			top:calc(50% - 1px);
+			left: 50%;
+			transition: 0.5s linear;
+		}
+		
+	</style>
+	
+	<body>
+		<div id="clock">
+			<ul id="year" class="common"></ul>
+			<ul id="month" class="common"></ul>
+			<ul id="day" class="common"></ul>
+			<ul id="hour" class="common"></ul>
+			<ul id="minute" class="common"></ul>
+			<ul id="second" class="common"></ul>
+			<div id="dot">
+				<div id="line"></div>
+			</div>
+		</div>
+	</body>
+</html>
+
+<script>
+	// 获取元素
+	var clock=document.getElementById("clock");
+	var year=document.getElementById("year");
+	var month=document.getElementById("month");
+	var day=document.getElementById("day");
+	var hour=document.getElementById("hour");
+	var minute=document.getElementById("minute");
+	var second=document.getElementById("second");
+	var dot=document.getElementById("dot");
+	// 创建时间对象
+	var start=new Date();
+	// 设置年
+	year.innerHTML="<li>"+start.getFullYear()+"年</li>";
+	// year.innerHTML="<li>"+convert(start.getFullYear())+"年</li>";
+	//创建文档片段
+	var frag=document.createDocumentFragment();
+	// 创建月
+	for(var i=0;i<12;i++)
+	{
+		var li=document.createElement("li");
+		li.innerText= i+1+"月";
+		// li.innerText= convert(i+1)+"月";
+		// li.style.transform="rotate("+i*-30+"deg)";
+		frag.appendChild(li);
+	}
+	month.appendChild(frag);
+	// 创建日
+	var days=CalcDays();//获取本年本月的天数
+	for(var i=0;i<days;i++)
+	{
+		var li=document.createElement("li");
+		li.innerText= i+1+"日";
+		// li.innerText= convert(i+1)+"日";
+		// li.style.transform="rotate("+i*-(360/days)+"deg)";
+		frag.appendChild(li);
+	}
+	day.appendChild(frag);
+	// 创建时
+	for(var i=0;i<24;i++)
+	{
+		var li=document.createElement("li");
+		li.innerText= i+"时";
+		// li.innerText= convert(i)+"时";
+		// li.style.transform="rotate("+i*-(360/24)+"deg)";
+		frag.appendChild(li);
+	}
+	hour.appendChild(frag);
+	// 创建分
+	for(var i=0;i<60;i++)
+	{
+		var li=document.createElement("li");
+		li.innerText= i+"分";
+		// li.innerText= convert(i)+"分";
+		// li.style.transform="rotate("+i*-6+"deg)";
+		frag.appendChild(li);
+	}
+	minute.appendChild(frag);
+	// 创建秒
+	for(var i=0;i<60;i++)
+	{
+		var li=document.createElement("li");
+		li.innerText=  i+"秒";
+		// li.innerText=convert(i)+"秒";
+		// li.style.transform="rotate("+i*-6+"deg)";
+		frag.appendChild(li);
+	}
+	second.appendChild(frag);
+	
+	// 定时器
+	// 将创建与旋转分离 实现过渡动画
+	setTimeout(function()
+	{
+		//旋转月
+		for(var i=0;i<month.children.length;i++)
+		{
+			month.children[i].style.transform="rotate("+i*-30+"deg)";
+		}
+		//天
+		for(var i=0;i<day.children.length;i++)
+		{
+			day.children[i].style.transform="rotate("+i*-(360/days)+"deg)";
+		}
+		//时
+		for(var i=0;i<hour.children.length;i++)
+		{
+			hour.children[i].style.transform="rotate("+i*-(360/24)+"deg)";
+		}
+		//分
+		for(var i=0;i<minute.children.length;i++)
+		{
+			minute.children[i].style.transform="rotate("+i*-6+"deg)";;
+		}
+		//秒
+		for(var i=0;i<second.children.length;i++)
+		{
+			second.children[i].style.transform="rotate("+i*-6+"deg)";
+		}
+	},1000)
+	
+	// 反向旋转
+	setTimeout(function()
+	{
+		// 清除li的过渡属性
+		var lis=document.querySelectorAll("li");
+		for(var i=0;i<lis.length;i++)
+		{
+			lis[i].style.transition="none";
+		}
+		// 反向旋转
+		for(var i=0;i<clock.children.length;i++)
+		{
+			clock.children[i].classList.add("transition");
+			clock.children[i].style.transform="rotate(360deg)";
+		}
+	},6000)
+	
+	//初始化表盘
+	setTimeout(function()
+	{
+		// 初始化表盘
+		var initial=new Date();
+		var sec=initial.getSeconds();
+		var min=initial.getMinutes();
+		var h=initial.getHours();
+		var d=initial.getDate();
+		var mon=initial.getMonth()+1;
+		var y=initial.getFullYear();
+		second.style.transform="rotate("+sec*6+"deg)";
+		minute.style.transform="rotate("+min*6+"deg)";
+		hour.style.transform="rotate("+h*(360/24)+"deg)";
+		day.style.transform="rotate("+(d-1)*(360/days)+"deg)";
+		month.style.transform="rotate("+(mon-1)*30+"deg)";
+		year.children[0].innerText=y+"年";
+		// year.children[0].innerText=convert(y)+"年";
+		
+		// 染红当前时间
+		minute.children[min%60].classList.add("current");
+		hour.children[h%24].classList.add("current");
+		day.children[(d-1)%days].classList.add("current");
+		month.children[(mon-1)%12].classList.add("current");
+		year.children[0].classList.add("current");
+		
+	},6500)
+	
+	// 时钟运行
+	setTimeout(function()
+	{
+		// 清除过渡属性
+		for(var i=0;i<clock.children.length;i++)
+		{
+			clock.children[i].classList.remove("transition");
+		}
+		
+		// 小圆点出现
+		dot.style.visibility="visible";
+		//指针出现
+		dot.children[0].style.width="440px";
+		
+		// 获取最新时间
+		var run=new Date();
+		// 定义为全局变量，方便调试
+		sec=run.getSeconds();
+		min=run.getMinutes();
+		h=run.getHours();
+		d=run.getDate();
+		mon=run.getMonth()+1;
+		y=run.getFullYear();
+		// 校正时间，排除两秒内（初始化和运行期间）产生时间进位
+		second.style.transform="rotate("+sec*6+"deg)";
+		minute.style.transform="rotate("+min*6+"deg)";
+		hour.style.transform="rotate("+h*(360/24)+"deg)";
+		day.style.transform="rotate("+(d-1)*(360/days)+"deg)";
+		month.style.transform="rotate("+(mon-1)*30+"deg)";
+		year.children[0].innerText=y+"年";
+		// year.children[0].innerText=convert(y)+"年";
+		
+		//时钟运行
+		setInterval(function()
+		{
+			sec++;//计时器1s后才执行
+			second.style.transform="rotate("+sec*6+"deg)";
+			second.children[sec-1].classList.remove("current");
+			second.children[sec%60].classList.add("current");//对60取余，将下标控制在0-59，防止数组越界
+			if(sec==60)//0-60
+			{
+				sec=0;//秒针归零
+				min++;//分针进一
+				minute.style.transform="rotate("+min*6+"deg)";//分盘转动
+				minute.children[min-1].classList.remove("current");
+				minute.children[min%60].classList.add("current");
+				if(min==60)
+				{
+					min=0;//分针归零
+					h++;//时针进一
+					hour.style.transform="rotate("+h*(360/24)+"deg)";
+					hour.children[h-1].classList.remove("current");
+					hour.children[h%24].classList.add("current");
+					if(h==24)
+					{
+						h=0;//时针归零
+						d++;//天数加一
+						day.style.transform="rotate("+(d-1)*(360/days)+"deg)";
+						day.children[d-2].classList.remove("current");
+						day.children[(d-1)%days].classList.add("current");
+						if(d==days+1)//1-32
+						{
+							d=1;//天数置1，而不是置0
+							mon++;
+							month.style.transform="rotate("+(mon-1)*30+"deg)";
+							month.children[mon-2].classList.remove("current");
+							month.children[(mon-1)%12].classList.add("current");
+							if(mon==13)//1-13
+							{
+								mon=1;//月数置1，而非0
+								y++;
+								year.innerHTML="<li>"+y+"年</li>";
+							}
+						}
+					}
+				}
+			}
+		},1000);	
+	},7500)
+	
+	
+	// 根据年份和月数判断天数
+	function CalcDays()
+	{
+		var curMonth=start.getMonth()+1; //getMonth()返回 0-11
+		var curYear=start.getFullYear();
+		var isLeapYear=false;//默认是平年
+		if( (curYear%100!=0 && curYear%4==0) || curYear%400==0 )
+		{
+			//闰年分两种，一种是世纪年（能被400整除），一种是非世纪年（不能被
+			//100整除，且能被4整除）
+			isLeapYear=true;
+		}
+		switch(curMonth)
+		{
+			case 2:
+				return (isLeapYear)? 29:28;
+			case 4: case 6: case 9: case 11:
+				return 30;
+			default:
+				return 31;
+		}
+	}
+	
+	
+	function convert(num)
+	{
+		num=num.toString();
+		arr=num.split("");
+		var str="";
+		for(var i=0;i<arr.length;i++)
+		{
+			switch(arr[i])
+			{
+				case "0":
+					str+="零";
+					break;
+				case "1":
+					str+="一";
+					break;
+				case "2":
+					str+="二";
+					break;
+				case "3":
+					str+="三";
+					break;
+				case "4":
+					str+="四";
+					break;
+				case "5":
+					str+="五";
+					break;
+				case "6":
+					str+="六";
+					break;
+				case "7":
+					str+="七";
+					break;
+				case "8":
+					str+="八";
+					break;
+				case "9":
+					str+="九";
+					break;
+			}	
+		}
+		return str;
+	}
+	
+	
+</script>

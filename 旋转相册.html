@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<style>
+			
+			*{margin: 0;padding: 0;}
+			
+			#stage
+			{
+				height: 100vh;
+				perspective: 1000px;
+				background-color: #000000;
+				overflow: hidden;
+				transform-style: preserve-3d;
+			}
+			
+			#album
+			{
+				width: 115px;
+				height: 170px;
+				margin: 250px auto 0;
+				/* border: 1px solid black; */
+				/* background-color: white; */
+				transform: rotateX(-10deg) rotateY(0deg);
+				/* transform: rotateY(0deg); */
+				transform-style: preserve-3d;
+				/* transition: 2s; */
+				position: relative;
+			}
+			
+			.pictures
+			{
+				width: 115px;
+				height: 170px;
+				/* border: 1px solid; */
+				position: absolute;
+				background-size: auto 170px;
+				background-repeat: no-repeat;
+				background-position-x: center;/* 水平方向中心对齐 */
+				transition: all 1s ease;
+				box-shadow: 0px 0px 8px white;
+			}
+			
+			.pictures::after
+			{
+				content: "";
+				display: block;
+				width: inherit;
+				height: 40%;
+				background-image: inherit;
+				background-size: inherit;
+				background-position-x: inherit;
+				background-position-y:-102px;
+				transform: rotateX(180deg);
+				position: absolute;
+				bottom: -43%;
+			}
+			.pictures::before
+			{
+				content: "";
+				display: block;
+				width: inherit;
+				height: 41%;
+				background: linear-gradient(rgba(0,0,0,0.3),black);
+				position: absolute;
+				bottom: -44%;
+				z-index: 1;
+			}
+			
+			/* 设置舞台中央光亮效果 */
+			#album::after
+			{
+				content: "";
+				display: block;
+				width: 300px;
+				height: 300px;
+				border-radius: 150px;
+				position: absolute;
+				left: -100px;
+				bottom: -100px;
+				background-image: radial-gradient(farthest-side,rgba(255,255,255,0.7),black);
+				transform: rotateX(90deg) translateZ(-100px);
+			}
+			
+			/* 微调图片位置 */
+			.pictures:nth-child(2)
+			{
+				background-position-x: 0px;
+			}
+			.pictures:nth-child(4)
+			{
+				background-position-x: -45px;
+			}
+			.pictures:nth-child(5)
+			{
+				background-position-x: -45px;
+			}
+			
+			
+		</style>
+	</head>
+	
+	<body> 
+		<div id="stage">
+			<div id="album"></div>
+		</div>
+	</body>
+	
+	<script>
+		// 定义图片数组
+		var picSrc=["url(images/a0.jpeg)","url(images/a1.jpeg)","url(images/a2.jpeg)",
+		"url(images/a3.jpeg)","url(images/a4.jpeg)","url(images/a5.jpeg)",
+		"url(images/c0.jpeg)","url(images/c1.jpeg)","url(images/c2.jpeg)",
+		"url(images/c3.jpeg)","url(images/c4.jpeg)","url(images/c5.jpeg)"];
+		
+		var album = document.getElementById("album");
+		var frag=document.createDocumentFragment();
+		var deg=360/picSrc.length;
+		
+		// 创建元素
+		for(var i=picSrc.length-1;i>=0;i--)
+		{
+			var div=document.createElement("div");
+			// div.innerText=12-i;//为图片编号
+			div.classList.add("pictures");
+			// 设置过渡延迟
+			div.style.transitionDelay=0.2*i+"s";
+			// 设置背景图片
+			div.style.backgroundImage=picSrc[i];
+			
+			frag.appendChild(div);
+		}
+		album.appendChild(frag);
+		
+		//旋转每个元素
+		// 为实现过渡，创建与旋转必须分开进行
+		var pics=document.querySelectorAll(".pictures");
+		album.onclick=function()
+		{
+			for(var i=0;i<pics.length;i++)
+			{
+				pics[i].style.transform="rotateY("+ i*deg +"deg) translateZ(350px)";
+			}
+		}
+		
+		//实现镜头拖动
+		var stage=document.getElementById("stage");
+		var x1,x2,y1,y2;
+		var degX,degY;
+		var sumX=-10,sumY=0;//x轴初始旋转度数为-10deg
+		stage.onmousedown=function(e)
+		{
+			//记录鼠标按下时的位置
+			x1=e.screenX;
+			y1=e.screenY;
+			
+			stage.onmousemove=function(e)
+			{
+				// 记录每一次移动鼠标的位置
+				x2=e.screenX;
+				y2=e.screenY;
+				// 计算鼠标移动距离 并做缩放处理
+				degX=-(y2-y1)/600;
+				degY=(x2-x1)/600;
+				// 总旋转度数=上一次旋转度数+本轮旋转度数
+				sumX+=degX;
+				sumY+=degY;
+				// 再次缩放，使总度数在[-360,360]内循环
+				sumX%=360;
+				sumY%=360;
+				if(sumX>=0) sumX=0;//设置最大仰视角度
+				if(sumX<=-90) sumX=-90;//设置最大俯视角度
+				// console.log("sumY:",sumY,"degY:",degY,"x2-x1:",x2-x1);
+				// 旋转元素
+				// 注意顺序，旋转的不可交换性 谁靠后，视觉效果越偏向谁 
+				album.style.transform="rotateX("+sumX+"deg) rotateY("+sumY+"deg)";
+				
+				// 阻止浏览器的默认行为：拖动图片时，中断mousemove
+				// mouseup应该也是中断mousemove，此时，浏览器的默认行为优先级更高，导致
+				// mouseup被忽略
+				return false;
+			}
+			
+		}
+		stage.onmouseup=function()
+		{
+			stage.onmousemove=null;
+		}
+		
+	</script>
+</html>
